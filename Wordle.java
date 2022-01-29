@@ -55,13 +55,13 @@ public class Wordle {
             index.evaluateValue();
         }
 
-        // creates blank words with value 0 int he bestwords array
+        // creates blank words with value 0 in the bestwords array
         for (int index = 0; index < 10; index++)
         {
             bestWords[index] = new word();
         }
 
-        // 
+        // quick code to find the ten best words without having to use a sorting algorithm
         for (int index = 0; index < wordList.length; index++) 
         {
             for (int i = 0; i < 10; i++)
@@ -74,7 +74,7 @@ public class Wordle {
             }
         }
 
-        // quick code to find the ten best words without having to use a sorting algorithm
+        // prints the 10 best words
         int count = 1;
         for (word index : bestWords)
         {
@@ -90,7 +90,6 @@ public class Wordle {
             }
             count++;
         }
-
     }
 
     // prints the alphabet and their frequency 
