@@ -8,30 +8,40 @@ import java.io.FileNotFoundException;
 
 public class Wordle {
     
-    // counts the frequency of every letter a to z
-    public static int[] letterCount = new int[26];
+    public static int[] letterCount = new int[26]; // counts the frequency of every letter a to z
+    public static word[] wordList; // array to contain all words in total word list from wordle
+    public static final int wordListSize = 10657;
+    public static final int answerListSize = 2315;
 
-    public static void main(String[] args) {
+    Wordle() {
 
-        word[] wordList = new word[10657]; // array to contain all words in total word list from wordle
-        word[] bestWords = new word[10]; // array to contain the ten best words
+        wordList = new word[wordListSize + answerListSize]; // array to contain all words in total word list from wordle
 
         // adds all the words in wordList.txt to wordList array
         try 
         {
             File wordListFile = new File("wordList.txt");
+            File answerListFile = new File("answerList.txt");
 
-            Scanner fileInput = new Scanner(wordListFile);
+            Scanner wordListInput = new Scanner(wordListFile);
+            Scanner answerListInput = new Scanner(answerListFile);
 
             int index = 0;
 
-            while (fileInput.hasNextLine()) 
+            while (wordListInput.hasNextLine()) 
             {
-                wordList[index] = new word(fileInput.nextLine());
+                wordList[index] = new word(wordListInput.nextLine());
                 index++;
             }
 
-            fileInput.close();
+            while (answerListInput.hasNextLine())
+            {
+                wordList[index] = new word(answerListInput.nextLine());
+                index++;
+            }
+
+            wordListInput.close();
+            answerListInput.close();
 
         }
         catch (FileNotFoundException e)
@@ -42,109 +52,17 @@ public class Wordle {
         // goes through wordlist and counts the frequency of every letter
         for (word index : wordList) 
         {
-            for (int charIndex = 0; charIndex < 5; charIndex++) 
-            {
-                char c = index.getWord().charAt(charIndex);
-                letterCount[c - 'a']++; // increments the element to the proportional letter a = 0, b = 1, c = 2...
-            }
-        }
+        
 
-        // determines the score or value for every word in the word list
-        for (word index : wordList) 
-        {
-            index.evaluateValue();
-        }
-
-        // creates blank words with value 0 in the bestwords array
-        for (int index = 0; index < 10; index++)
-        {
-            bestWords[index] = new word();
-        }
-
-        // quick code to find the ten best words without having to use a sorting algorithm
-        for (int index = 0; index < wordList.length; index++) 
-        {
-            for (int i = 0; i < 10; i++)
-            {
-                if (wordList[index].getValue() > bestWords[i].getValue())
-                {
-                    bestWords[i] = wordList[index];
-                    break;
-                }
-            }
-        }
-
-        // prints the 10 best words
-        int count = 1;
-        for (word index : bestWords)
-        {
-            if (count == 10) 
-            {
-                System.out.println(count+ ": " + index);
-
-            }
-            else 
-            {
-                System.out.println(count+ ":  " + index);
-
-            }
-            count++;
-        }
-    }
-
-    // prints the alphabet and their frequency 
-    public static void printLetterCount() 
-    {
-        for (int i = 0; i < 26; i++) 
-        {
-            System.out.println((char)(i + 'a') + ": " + letterCount[i]);
-        }
-    }
-
-    // word object used to store the string word and the value of the word
-    private static class word 
-    {
-
-        public String word;
-        int value;
-
-        word(String w) 
-        {
-            word = w;
-        }
-
-        word()
-        {
-            word = "";
-            value = 0;
-        }
-
-        public String getWord() 
-        {
-            return word;
-        }
-
-        public int getValue() 
-        {
-            return value;
-        }
-
-        public void setWord(String w) 
-        {
-            word = w;
-        }
-
-        // evaluates the word by taking the average frequency of every letter
-        public void evaluateValue() 
-        {
-            value = 0;
             boolean repeatLetter = false;
             char c;
+            String word = index.getWord();
 
-            for (int index = 0; index < 5; index++) 
+            for (int charIndex = 0; charIndex < 5; charIndex++) 
             {
-                c = word.charAt(index);
-                for (int i = 0; i < index; i++) 
+                c = word.charAt(charIndex);
+
+                for (int i = 0; i < charIndex; i++) 
                 {
                     if (c == word.charAt(i)) 
                     {
@@ -155,18 +73,41 @@ public class Wordle {
                 // doesn't add to the word's value/score if the letter is a repeat
                 if (!repeatLetter) 
                 {
-                    value += letterCount[c - 'a'];
+                    letterCount[c - 'a']++; // increments the element to the proportional letter a = 0, b = 1, c = 2...
                 }
 
                 repeatLetter = false;
             }
-            
-            value = (int)(value / 5);
         }
 
-        public String toString() 
+        // determines the score or value for every word in the word list
+        for (word index : wordList) 
         {
-            return(word + " " + value);
+            index.evaluateValue();
+        }
+    }
+
+    public word getIndex(int index)
+    {
+        return wordList[index];
+    }
+
+    public int getNumberOfEntries()
+    {
+        return wordList.length;
+    }
+
+    public word[] toArray()
+    {
+        return wordList;
+    }
+        
+    // prints the alphabet and their frequency 
+    public static void printLetterCount() 
+    {
+        for (int i = 0; i < 26; i++) 
+        {
+            System.out.println((char)(i + 'a') + ": " + letterCount[i]);
         }
     }
 }
