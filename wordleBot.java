@@ -1,42 +1,59 @@
 import java.util.Scanner;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 public class wordleBot {
 
-    public static word[] potentialWords;
+    public static ArrayList<RankedWord> potentialWords;
     public static int numberOfPotentialWords;
 
     public static void main(String[] args)
     {
-
-        Wordle wordList = new Wordle();
-
-        potentialWords = wordList.toArray();
-        numberOfPotentialWords = Wordle.wordListSize;
+        potentialWords = new ArrayList<RankedWord>();
+        try {
+            File wordBank = new File("WordBank.txt");
+            Scanner wordBankInput = new Scanner(wordBank);
+            String[] nextLine;
+            RankedWord nextWord;
+            while (wordBankInput.hasNextLine())
+            {
+                nextLine = wordBankInput.nextLine().split(" ");
+                nextWord = new RankedWord(nextLine[0], Integer.valueOf(nextLine[1]), nextLine[2]);
+                potentialWords.add(nextWord);
+            }
+            wordBankInput.close();
+        }
+        catch (FileNotFoundException e)
+        {
+            System.out.println("File does not exist");
+        }
 
         //bestWordsWordle.printWords(potentialWords);
 
-        String[] GrayLetters = new String[26];
+        boolean[] GrayLetters = new boolean[26];
         String[] YellowLetters = new String[5];
         String[] GreenLetters = new String[5];
-
-        int grayLettersIndex = 0;
 
         String temp;
         int length;
 
         Scanner input = new Scanner(System.in);
 
-        while (bestWordsWordle.BestWords(potentialWords) > 1) {
+        while (potentialWords.size() > 1) {
+
+            bestWordsWordle.BestWords(potentialWords);
 
             System.out.print("Gray Letters: ");
             temp = input.nextLine();
             length = temp.length();
             for (int i = 0; i < length; i++)
             {
-                if (temp.charAt(i) != ' ')
+                char nextChar = temp.charAt(i);
+                if (nextChar > '`' && nextChar < '{')
                 {
-                    GrayLetters[grayLettersIndex] = String.valueOf(temp.charAt(i));
-                    grayLettersIndex++;
+                    GrayLetters[nextChar - 'a'] = true;
+                    System.out.println(nextChar - 'a');
                 }
             }
 
@@ -45,11 +62,13 @@ public class wordleBot {
             temp = input.nextLine();
             for (int i = 0; i < temp.length(); i++)
             {
-                if (temp.charAt(i) != ' ')
+                char nextChar = temp.charAt(i);
+                char nextIndex = temp.charAt(i + 1);
+                if (nextChar > '`' && nextChar < '{')
                 {
-                    if (YellowLetters[temp.charAt(i + 1) - '0' - 1] == null)
+                    if (YellowLetters[nextIndex - '0' - 1] == null)
                     {
-                        YellowLetters[temp.charAt(i + 1) - '0' - 1] = String.valueOf(temp.charAt(i));
+                        YellowLetters[nextIndex - '0' - 1] = String.valueOf(nextChar);
                     }
                     else
                     {
@@ -88,9 +107,9 @@ public class wordleBot {
             
             for (int i = 0; i < GrayLetters.length; i++)
             {
-                if (GrayLetters[i] != null)
+                if (GrayLetters[i])
                 {
-                    gray(GrayLetters[i].charAt(0), i);
+                    gray((char)(i + 97));
                 }
             }
 
@@ -104,89 +123,48 @@ public class wordleBot {
 
     public static void green(char c, int index)
     {
-        word[] temp = new word[numberOfPotentialWords];
-        int tempIndex = 0;
-
-        for (word i : potentialWords)
+        for (int i = 0; i < potentialWords.size(); i++)
         {
-            if (i == null)
+            RankedWord nextWord = potentialWords.get(i);
+            if (nextWord.getStringValue().charAt(index) != c)
             {
-                break;
-            }
-            if (i.getWord().charAt(index) == c)
-            {
-                temp[tempIndex] = i;
-                tempIndex++;
+                potentialWords.remove(i);
+                i--;
             }
         }
-        potentialWords = temp;
     }
 
     public static void yellow(char c, int index)
     {
-        word[] temp = new word[numberOfPotentialWords];
-        int tempIndex = 0;
-
-        for (word i : potentialWords)
+        for (int i = 0; i < potentialWords.size(); i++)
         {
-            if (i == null)
+            RankedWord nextWord = potentialWords.get(i);
+            if (nextWord.getStringValue().charAt(index) == c || !nextWord.contains(c))
             {
-                break;
-            }
-            else if (i.getWord().charAt(index) != c && i.contains(c))
-            {
-                temp[tempIndex] = i;
-                tempIndex++;
-            }
-        }
-        potentialWords = temp;
-    }
-
-    public static void gray(char c, int index)
-    {
-        word[] temp = new word[numberOfPotentialWords];
-        int tempIndex = 0;
-
-        for (word i : potentialWords)
-        {
-            if (i == null)
-            {
-                break;
-            }
-            else if (!i.contains(c))
-            {
-                temp[tempIndex] = i;
-                tempIndex++;
-            }
-        }
-        potentialWords = temp;
-    }
-
-    public static void printArray(String[] array)
-    {
-        for (int i = 0; i < array.length; i++) 
-        {
-            if (array[i] != null)
-            {
-                System.out.println(array[i]);
+                potentialWords.remove(i);
+                i--;
             }
         }
     }
 
-    public static word[] consolidateArray(word[] array)
+    public static void gray(char c)
     {
-        word[] temp = new word[1];
-        int tempIndex = 0;
-
-        for (int index = 0; index < array.length; index++)
+        for (int i = 0; i < potentialWords.size(); i++)
         {
-            if (array[index] != null)
+            RankedWord nextWord = potentialWords.get(i);
+            if (nextWord.contains(c))
             {
-                temp[tempIndex] = array[index];
-                tempIndex++;
+                potentialWords.remove(i);
+                i--;
             }
-            // word[] t;
         }
-        return temp;
+    }
+
+    public static void printArray(RankedWord[] array)
+    {
+        for (int i = 0; i < numberOfPotentialWords; i++) 
+        {
+            System.out.println(array[i]);
+        }
     }
 }
